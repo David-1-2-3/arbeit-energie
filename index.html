@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Arbeit &amp; Energie</title>
+<meta name="description" content="Interaktiv: Arbeit entlang verschiedener Wege im Schwerefeld und im elektrischen Feld, Energieerhaltung auf der Murmelbahn.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap">
+<script async src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+/* Same lab-bench layout as last week's turntable: stage left or on top, instrument panel beside or below. */
+:root {
+  --bg: #F6F5F9; --surface: #FFFFFF; --ink: #1C1928; --muted: #5F5A70; --line: #DFDBE8;
+  --accent: #5A3DC8; --accent-ink: #FFFFFF; --accent-soft: #EEE9FC; --focus: #5A3DC8;
+  --scrim: rgba(246, 245, 249, 0.86); --qr-bg: #FFFFFF; --qr-ink: #000000;
+
+  --floor: #EFEDF3; --grid: #E2DEEA; --grid2: #CBC5D8; --mark: #3A3550;
+  --halo: rgba(255, 255, 255, 0.9); --shadow: rgba(70, 45, 30, 0.28);
+  --track: #4A4560; --ground: #E2DFE8; --block: #9C9AA6; --blockedge: #6F6D7A;
+  --ball: #6748D3; --spring: #2F9E44; --equi: #A9A2BC;
+
+  --fext: #5A3DC8;   /* force we apply (crane, hand) */
+  --ffield: #E0102A; /* field force, red F_g as on the slides */
+  --pos: #13865A; --neg: #E06A00; --zero: #9C97AA;
+
+  --efeder: #2F9E44; --ekin: #E06A00; --epot: #2335E6; --heat: #C2255C;
+
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121019; --surface: #1C1926; --ink: #EDEAF5; --muted: #A39DB5; --line: #2E2A3B;
+    --accent: #A08BFF; --accent-ink: #120F1C; --accent-soft: #241E3A; --focus: #A08BFF;
+    --scrim: rgba(18, 16, 25, 0.86);
+    --floor: #17141F; --grid: #231F2C; --grid2: #3A3448; --mark: #D6D1E6;
+    --halo: rgba(18, 16, 25, 0.85); --shadow: rgba(0, 0, 0, 0.55);
+    --track: #C9C3DA; --ground: #221E2B; --block: #8B8996; --blockedge: #C2C0CA;
+    --ball: #A890FF; --spring: #5FD07A; --equi: #6B6480;
+    --fext: #A890FF; --ffield: #FF5468; --pos: #3FCB8C; --neg: #FF9A3D; --zero: #7D7790;
+    --efeder: #5FD07A; --ekin: #FF9A3D; --epot: #7F8CFF; --heat: #FF6FA2;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121019; --surface: #1C1926; --ink: #EDEAF5; --muted: #A39DB5; --line: #2E2A3B;
+  --accent: #A08BFF; --accent-ink: #120F1C; --accent-soft: #241E3A; --focus: #A08BFF;
+  --scrim: rgba(18, 16, 25, 0.86);
+  --floor: #17141F; --grid: #231F2C; --grid2: #3A3448; --mark: #D6D1E6;
+  --halo: rgba(18, 16, 25, 0.85); --shadow: rgba(0, 0, 0, 0.55);
+  --track: #C9C3DA; --ground: #221E2B; --block: #8B8996; --blockedge: #C2C0CA;
+  --ball: #A890FF; --spring: #5FD07A; --equi: #6B6480;
+  --fext: #A890FF; --ffield: #FF5468; --pos: #3FCB8C; --neg: #FF9A3D; --zero: #7D7790;
+  --efeder: #5FD07A; --ekin: #FF9A3D; --epot: #7F8CFF; --heat: #FF6FA2;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 18px 40px; -webkit-text-size-adjust: 100%;
+}
+.app { max-width: 1240px; margin: 0 auto; display: grid; gap: 18px; }
+.app > *, .layout > * { min-width: 0; }
+
+.top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.titles { min-width: 0; display: grid; gap: 4px; }
+.eyebrow { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, 5.2vw, 44px); line-height: 1.02; letter-spacing: -0.015em; text-wrap: balance; }
+.lead { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+
+.layout { display: grid; gap: 22px; }
+@media (min-width: 960px) {
+  .layout { grid-template-columns: minmax(0, 1.4fr) minmax(330px, 1fr); align-items: start; }
+  .stage { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+}
+.stage { min-width: 0; display: grid; gap: 12px; }
+
+.frames {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 4px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+}
+.frames button {
+  appearance: none; border: 0; background: transparent; color: var(--ink);
+  border-radius: 10px; padding: 7px 4px; font: inherit; cursor: pointer;
+  display: grid; align-content: center; text-align: center; min-height: 54px;
+}
+.frames .k { font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1.15; }
+.frames .s { font-size: 12px; color: var(--muted); line-height: 1.25; }
+.frames button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.frames button[aria-selected="true"] .s { color: inherit; opacity: 0.85; }
+.frames button:not([aria-selected="true"]):hover { background: var(--accent-soft); }
+
+.view { margin: 0; min-width: 0; display: grid; gap: 6px; }
+.view figcaption { font-size: 13px; color: var(--muted); }
+canvas.sim { display: block; width: 100%; height: auto; border-radius: 16px; background: var(--floor); touch-action: none; }
+#cvW { aspect-ratio: 1 / 1; max-width: min(100%, max(300px, calc(100vh - 300px))); justify-self: center; cursor: crosshair; }
+#cvG { aspect-ratio: 3 / 1; min-height: 140px; touch-action: auto; }
+#cvE { aspect-ratio: 16 / 10; touch-action: auto; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+  appearance: none; font: inherit; font-weight: 700; font-size: 15px;
+  border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  padding: 0 16px; min-height: 50px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+}
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btn:hover:not(:disabled) { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; flex: 1; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.small { min-height: 40px; font-size: 14px; padding: 0 12px; }
+.btn.icon { width: 50px; padding: 0; }
+.btn:focus-visible, .frames button:focus-visible, .seg label:has(input:focus-visible),
+.chip:has(input:focus-visible), summary:focus-visible, input[type="range"]:focus-visible, input[type="url"]:focus-visible {
+  outline: 3px solid var(--focus); outline-offset: 2px;
+}
+
+.panel { min-width: 0; display: grid; gap: 20px; }
+.explain { background: var(--accent-soft); border-radius: 16px; padding: 16px 18px 18px; display: grid; gap: 6px; }
+.pill { justify-self: start; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; background: var(--surface); color: var(--accent); }
+.pill[data-state="on"] { background: var(--accent); color: var(--accent-ink); }
+.pill[data-state="end"] { background: var(--ink); color: var(--bg); }
+.explain h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 23px; line-height: 1.15; text-wrap: balance; }
+.explain p { margin: 0; line-height: 1.75; }
+
+.group { border-top: 1px solid var(--line); padding-top: 14px; display: grid; gap: 12px; min-width: 0; }
+.group h3 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
+.note { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+.m { font-family: var(--font-math); font-style: italic; white-space: nowrap; }
+.m sub { font-size: 0.68em; }
+.vec { position: relative; display: inline-block; }
+.vec::after { content: "\2192"; position: absolute; left: 55%; top: -0.62em; transform: translateX(-50%); font-size: 0.72em; font-style: normal; line-height: 1; }
+.t-ext { color: var(--fext); } .t-field { color: var(--ffield); } .t-pos { color: var(--pos); } .t-neg { color: var(--neg); }
+.t-f { color: var(--efeder); } .t-k { color: var(--ekin); } .t-p { color: var(--epot); } .t-q { color: var(--heat); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px 7px 10px; min-height: 42px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; user-select: none; font-size: 14px; }
+.chip input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.chip:has(input:checked) { border-color: var(--accent); }
+.chip:has(input:not(:checked)) { opacity: 0.5; }
+.chip:has(input:not(:checked)) .lbl { text-decoration: line-through; }
+
+.slider { display: grid; gap: 2px; }
+.slider .row { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 12px; flex-wrap: wrap; }
+.slider label, .slider .lab { font-weight: 700; }
+.slider output { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; }
+input[type="range"] { width: 100%; height: 34px; margin: 0; accent-color: var(--accent); }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); justify-self: start; }
+.seg label { position: relative; padding: 7px 12px; border-radius: 9px; cursor: pointer; font-size: 14px; font-variant-numeric: tabular-nums; }
+.seg input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.routes { display: grid; gap: 6px; }
+.routes .lab { font-size: 13px; color: var(--muted); }
+
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th, td { padding: 7px 6px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: baseline; }
+thead th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+tbody th { text-align: left; font-weight: 400; }
+tbody th .u { color: var(--muted); font-size: 12px; margin-left: 4px; }
+td { font-family: var(--font-math); font-size: 16px; min-width: 64px; white-space: nowrap; }
+tr.hl td, tr.hl th { font-weight: 700; }
+.empty { color: var(--muted); font-size: 14px; margin: 0; }
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: 0; }
+
+.eq { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px 10px; font-family: var(--font-math); font-size: 19px; line-height: 1.9; }
+.term { display: grid; justify-items: center; }
+.term small { font-family: var(--font-body); font-size: 12px; line-height: 1.3; color: var(--muted); text-align: center; }
+
+/* energy bar: always the full width of E_ges, only its split changes */
+.ebar { display: flex; height: 30px; border-radius: 10px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
+.ebar span { display: block; height: 100%; min-width: 0; }
+.ebar .b-f { background: var(--efeder); } .ebar .b-k { background: var(--ekin); }
+.ebar .b-p { background: var(--epot); } .ebar .b-q { background: var(--heat); }
+.elegend { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 4px 12px; font-size: 14px; }
+.elegend div { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; border-bottom: 1px solid var(--line); padding: 3px 0; }
+.elegend b { font-family: var(--font-math); font-weight: 400; font-size: 16px; font-variant-numeric: tabular-nums; }
+.elegend .sum { font-weight: 700; }
+
+details { border-bottom: 1px solid var(--line); padding: 4px 0 10px; }
+details:last-child { border-bottom: 0; }
+summary { cursor: pointer; font-weight: 700; padding: 6px 0; line-height: 1.7; }
+details p { margin: 4px 0 0; line-height: 1.75; }
+.foot { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.6; }
+
+.pages { display: flex; flex-wrap: wrap; gap: 6px; }
+.pages a { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px 0 6px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 700; }
+.pages .n { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-family: var(--font-display); font-size: 14px; }
+.pages a[aria-current="page"] { background: var(--accent); border-color: transparent; color: var(--accent-ink); }
+.pages a[aria-current="page"] .n { background: var(--accent-ink); color: var(--accent); }
+.pages a:not([aria-current="page"]):hover { border-color: var(--accent); }
+.pages a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.qr-overlay { position: fixed; inset: 0; z-index: 50; background: var(--scrim); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: grid; place-items: center; overflow-y: auto;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.qr-box { width: min(100%, 520px); background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px; display: grid; gap: 12px; box-shadow: 0 20px 60px var(--shadow); }
+.qr-box h2 { margin: 0; font-family: var(--font-display); font-size: 26px; }
+.qr-code { background: var(--qr-bg); color: var(--qr-ink); border-radius: 14px; padding: 10px; display: grid; place-items: center; width: min(100%, 64vh); justify-self: center; aspect-ratio: 1 / 1; }
+.qr-code canvas { width: 100%; height: auto; image-rendering: pixelated; display: block; }
+.qr-code p { margin: 0; padding: 16px; text-align: center; font-size: 14px; }
+.qr-url { font-size: 15px; word-break: break-all; text-align: center; margin: 0; color: var(--muted); }
+.qr-box label { font-weight: 700; font-size: 14px; }
+.qr-box input[type="url"] { width: 100%; font: inherit; font-size: 15px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.qr-row { display: flex; gap: 8px; justify-content: flex-end; }
+
+@media (max-width: 420px) {
+  .frames .k { font-size: 15px; } .frames .s { font-size: 11px; }
+  .btn { padding: 0 12px; } .eq { font-size: 17px; }
+  .seg label { padding: 6px 9px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="titles">
+      <p class="eyebrow" id="eyebrow">Physik I · Übung 8</p>
+      <h1 id="title">Arbeit im Kraftfeld</h1>
+      <p class="lead" id="lead"></p>
+    </div>
+    <button class="btn small" id="qrBtn" type="button" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm8-2h2v2h-2v-2zm2 2h2v2h-2v-2zm2-2h4v2h-2v2h-2v-4zm-4 4h2v4h-2v-4zm4 2h4v2h-4v-2zm2-2h2v2h-2v-2z"/></svg>
+      QR-Code
+    </button>
+  </header>
+
+  <nav class="pages" aria-label="Seiten">
+    <a href="#arbeit" data-page="arbeit"><span class="n">1</span>Arbeit</a>
+    <a href="#energie" data-page="energie"><span class="n">2</span>Energie</a>
+  </nav>
+
+  <!-- ============ PAGE 1: WORK ============ -->
+  <main class="layout" id="page-arbeit">
+    <section class="stage" aria-label="Simulation Arbeit">
+      <div class="frames" role="tablist" aria-label="Kraftfeld wählen">
+        <button type="button" role="tab" data-field="g" aria-selected="true" aria-controls="cvW">
+          <span class="k">Schwerefeld</span><span class="s">Kran hebt Betonblock</span>
+        </button>
+        <button type="button" role="tab" data-field="e" aria-selected="false" aria-controls="cvW">
+          <span class="k">Elektrisches Feld</span><span class="s">Ausblick auf Kapitel 11</span>
+        </button>
+      </div>
+
+      <figure class="view">
+        <canvas class="sim" id="cvW" role="img" aria-label="Kraftfeld mit Startpunkt A, Zielpunkt C und dem gewählten Weg"></canvas>
+        <figcaption>Ziehe <b>A</b> und <b>C</b> an einen anderen Ort. Oder zeichne mit Maus oder Finger einen eigenen Weg direkt ins Feld.</figcaption>
+      </figure>
+
+      <div class="routes">
+        <span class="lab" id="routeLbl">Weg von A nach C</span>
+        <div class="seg" role="radiogroup" aria-labelledby="routeLbl">
+          <label><input type="radio" name="route" value="b" checked>Über B</label>
+          <label><input type="radio" name="route" value="line">Gerade</label>
+          <label><input type="radio" name="route" value="stairs">Treppe</label>
+          <label><input type="radio" name="route" value="detour">Umweg</label>
+          <label><input type="radio" name="route" value="draw">Eigener Weg</label>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn icon" id="wPause" type="button" aria-label="Pause">
+          <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" hidden><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+        </button>
+        <button class="btn primary" id="wGo" type="button">Weg abfahren</button>
+        <button class="btn" id="wReset" type="button">Zurücksetzen</button>
+      </div>
+
+      <figure class="view">
+        <figcaption>Arbeit <span class="m">W(s)</span> entlang des Weges. Graue Linien: bereits abgefahrene Wege.</figcaption>
+        <canvas class="sim" id="cvG" role="img" aria-label="Diagramm der aufsummierten Arbeit über der zurückgelegten Weglänge"></canvas>
+      </figure>
+    </section>
+
+    <aside class="panel">
+      <article class="explain" aria-live="polite">
+        <span class="pill" id="wPill">Bereit</span>
+        <h2 id="wTitle"></h2>
+        <p id="wText"></p>
+      </article>
+
+      <section class="group" aria-labelledby="h-who">
+        <h3 id="h-who">Welche Arbeit?</h3>
+        <div class="seg" role="radiogroup" aria-labelledby="h-who">
+          <label><input type="radio" name="who" value="ext" checked><span id="whoExt">Kran</span></label>
+          <label><input type="radio" name="who" value="field"><span id="whoField">Gewichtskraft</span></label>
+        </div>
+        <p class="note" id="whoNote"></p>
+        <div class="slider" id="sl-fg">
+          <div class="row"><label for="fg">Gewichtskraft <span class="m">F<sub>G</sub> = mg</span></label><output id="fgOut" for="fg"></output></div>
+          <input type="range" id="fg" min="100" max="2000" step="100" value="1000">
+        </div>
+        <div class="slider" id="sl-q" hidden>
+          <div class="row"><label for="qq">Ladung <span class="m">Q</span> in der Mitte</label><output id="qOut" for="qq"></output></div>
+          <input type="range" id="qq" min="-200" max="200" step="10" value="100">
+        </div>
+      </section>
+
+      <section class="group" aria-labelledby="h-num">
+        <h3 id="h-num">Messwerte</h3>
+        <div class="tablewrap">
+          <table>
+            <tbody>
+              <tr><th scope="row">Weglänge <span class="m">s</span><span class="u" id="uL"></span></th><td id="oL"></td></tr>
+              <tr><th scope="row">Arbeit bis hier <span class="m">W(s)</span><span class="u" id="uW1"></span></th><td id="oWnow"></td></tr>
+              <tr class="hl"><th scope="row">Arbeit ganzer Weg <span class="m">∫F·ds</span><span class="u" id="uW2"></span></th><td id="oWint"></td></tr>
+              <tr><th scope="row"><span id="formLbl"></span><span class="u" id="uW3"></span></th><td id="oWform"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th scope="col" style="text-align:left">Abgefahrene Wege</th><th scope="col">Länge</th><th scope="col">Arbeit</th></tr></thead>
+            <tbody id="logBody"></tbody>
+          </table>
+        </div>
+        <p class="empty" id="logEmpty">Noch kein Weg abgefahren. Fahre mehrere Wege ab und vergleiche.</p>
+      </section>
+
+      <section class="group" aria-labelledby="h-eq">
+        <h3 id="h-eq">Arbeit</h3>
+        <div class="eq" aria-label="W gleich Integral von A nach C von F Punkt d s">
+          <span class="term"><span class="m">W</span><small>Arbeit</small></span>
+          <span>=</span>
+          <span class="term"><span class="m">∫<sub>A</sub><sup style="font-size:.68em">C</sup> <span class="vec">F</span> · d<span class="vec">s</span></span><small>Kraft mal Wegstück,<br>aufsummiert</small></span>
+        </div>
+        <div class="eq" id="eqG">
+          <span class="m">W = F<sub>G</sub> · Δh = mgΔh</span>
+        </div>
+        <div class="eq" id="eqE" hidden>
+          <span class="m">W = kQq</span><span class="m">(1/r<sub>C</sub> − 1/r<sub>A</sub>)</span>
+        </div>
+        <p class="note" id="eqNote"></p>
+      </section>
+
+      <section class="group" aria-labelledby="h-try1">
+        <h3 id="h-try1">Zum Ausprobieren</h3>
+        <div>
+          <details>
+            <summary>Frage 1, Kran: Weg „Über B“, <span class="m">F<sub>G</sub></span> = 1’000 N. Wie viel Arbeit verrichtet der Kran von A nach C?</summary>
+            <p>20’000 J. Das Stück A→B ist 10 m hoch: 10’000 J. Das Stück B→C ist zwar länger (10√2 m), steigt aber auch nur um 10 m: wieder 10’000 J. Nur die Komponente der Kraft in Wegrichtung zählt. Im Diagramm sieht man zwei gleich hohe Stufen, die zweite flacher, weil sie über eine längere Strecke verteilt ist.</p>
+          </details>
+          <details>
+            <summary>Fahre im Schwerefeld die Treppe ab. Warum bleibt <span class="m">W(s)</span> auf den waagrechten Stücken konstant?</summary>
+            <p>Dort steht <span class="m"><span class="vec">F</span></span> senkrecht auf <span class="m">d<span class="vec">s</span></span>, also ist <span class="m"><span class="vec">F</span> · d<span class="vec">s</span> = 0</span>. Der Weg wird dort grau gezeichnet. Wie beim Beispiel auf der Folie: das 1-kg-Stück waagrecht verschieben kostet keine Arbeit gegen die Schwerkraft.</p>
+          </details>
+          <details>
+            <summary>Beim Umweg nimmt <span class="m">W(s)</span> zum Schluss wieder ab. Was passiert dort?</summary>
+            <p>Der Block geht über C hinaus nach oben und muss danach wieder hinunter. Beim Absenken zeigt der Weg nach unten, die Kraft des Krans nach oben: <span class="m"><span class="vec">F</span> · d<span class="vec">s</span> &lt; 0</span>. Die zu viel verrichtete Arbeit kommt genau wieder zurück.</p>
+          </details>
+          <details>
+            <summary>Fahre alle fünf Wege ab. Was fällt in der Tabelle auf?</summary>
+            <p>Die Weglängen sind sehr verschieden, die Arbeit ist immer gleich. Die Gewichtskraft ist konservativ: Die Arbeit hängt nur von Anfangs- und Endpunkt ab. Darum kann man jedem Punkt eine potentielle Energie <span class="m">E<sub>pot</sub> = mgh</span> zuordnen.</p>
+          </details>
+          <details>
+            <summary>Ziehe C genau auf A. Wie gross ist die Arbeit für einen geschlossenen Weg?</summary>
+            <p>Null, egal wie der Weg aussieht. Was man auf dem Hinweg hineinsteckt, bekommt man auf dem Rückweg zurück.</p>
+          </details>
+          <details>
+            <summary>Elektrisches Feld: Auch auf den waagrechten Stücken der Treppe ändert sich jetzt <span class="m">W</span>. Warum? Und ist das Ergebnis trotzdem für alle Wege gleich?</summary>
+            <p>Die Kraft zeigt jetzt radial von der Ladung <span class="m">Q</span> weg (oder zu ihr hin) und ist nahe bei <span class="m">Q</span> viel grösser. Sie steht nur senkrecht auf dem Weg, wenn man auf einem Kreis um <span class="m">Q</span> läuft (gestrichelte Linien). Trotzdem ist auch die elektrische Kraft konservativ: Am Ende zählen nur die Abstände <span class="m">r<sub>A</sub></span> und <span class="m">r<sub>C</sub></span>.</p>
+          </details>
+          <details>
+            <summary>Und wenn Reibung im Spiel ist?</summary>
+            <p>Dann hängt die Arbeit vom Weg ab. Die Reibungskraft zeigt immer gegen die Bewegung, jedes Wegstück kostet <span class="m">F<sub>R</sub> · ds &gt; 0</span>. Ein langer Umweg kostet mehr (siehe Block mit Reibung: <span class="m">W = F<sub>R</sub> · s</span>). Reibung ist nicht konservativ, es gibt keine „potentielle Energie der Reibung“.</p>
+          </details>
+        </div>
+        <p class="foot">Annahmen: Der Kran (oder die Hand) bewegt den Körper sehr langsam, ohne ihn zu beschleunigen. Seine Kraft ist deshalb immer genau entgegengesetzt gleich der Feldkraft. Keine Reibung. Elektrisches Feld: Ladung <span class="m">Q</span> fest in der Mitte, Probeladung <span class="m">q</span> = +10 nC, <span class="m">k</span> = 8.99·10⁹ N m²/C². Die Arbeit wird entlang des Weges numerisch aufsummiert.</p>
+      </section>
+    </aside>
+  </main>
+
+  <!-- ============ PAGE 2: ENERGY ============ -->
+  <main class="layout" id="page-energie" hidden>
+    <section class="stage" aria-label="Simulation Murmelbahn">
+      <figure class="view">
+        <canvas class="sim" id="cvE" role="img" aria-label="Murmelbahn mit Feder, Looping und steiler Rampe"></canvas>
+      </figure>
+
+      <div class="ebar" id="ebar" role="img" aria-label="Aufteilung der Gesamtenergie">
+        <span class="b-f"></span><span class="b-k"></span><span class="b-p"></span><span class="b-q"></span>
+      </div>
+      <div class="elegend">
+        <div><span><i class="swatch" style="background:var(--efeder)"></i>Feder</span><b id="eF"></b></div>
+        <div><span><i class="swatch" style="background:var(--ekin)"></i>Kinetisch</span><b id="eK"></b></div>
+        <div><span><i class="swatch" style="background:var(--epot)"></i>Potentiell</span><b id="eP"></b></div>
+        <div><span><i class="swatch" style="background:var(--heat)"></i>Wärme</span><b id="eQ"></b></div>
+        <div class="sum"><span>Summe</span><b id="eS"></b></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn icon" id="ePause" type="button" aria-label="Pause">
+          <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" hidden><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+        </button>
+        <button class="btn primary" id="eGo" type="button">Kugel loslassen</button>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <article class="explain" aria-live="polite">
+        <span class="pill" id="ePill">Bereit</span>
+        <h2 id="eTitle"></h2>
+        <p id="eText"></p>
+      </article>
+
+      <section class="group" aria-labelledby="h-eshow">
+        <h3 id="h-eshow">Anzeigen</h3>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" id="showF" checked><span class="lbl">Kräfte im Looping</span></label>
+          <label class="chip"><input type="checkbox" id="showZ" checked><span class="lbl">Höhe <span class="m">z<sub>max</sub></span></span></label>
+          <label class="chip"><input type="checkbox" id="showT" checked><span class="lbl">Stroboskop</span></label>
+        </div>
+      </section>
+
+      <section class="group" aria-labelledby="h-eset">
+        <h3 id="h-eset">Einstellungen</h3>
+        <div class="slider">
+          <div class="row"><label for="sx">Stauchung der Feder <span class="m">x</span></label><output id="sxOut" for="sx"></output></div>
+          <input type="range" id="sx" min="1" max="12" step="0.5" value="7">
+        </div>
+        <div class="slider">
+          <div class="row"><label for="sd">Federkonstante <span class="m">D</span></label><output id="sdOut" for="sd"></output></div>
+          <input type="range" id="sd" min="50" max="300" step="10" value="100">
+        </div>
+        <div class="slider">
+          <div class="row"><label for="sm">Masse <span class="m">m</span></label><output id="smOut" for="sm"></output></div>
+          <input type="range" id="sm" min="10" max="60" step="5" value="20">
+        </div>
+        <div class="slider">
+          <div class="row"><label for="sr">Radius des Loopings <span class="m">R</span></label><output id="srOut" for="sr"></output></div>
+          <input type="range" id="sr" min="15" max="35" step="1" value="25">
+        </div>
+        <div class="slider">
+          <div class="row"><label for="smu">Reibungszahl <span class="m">μ</span></label><output id="smuOut" for="smu"></output></div>
+          <input type="range" id="smu" min="0" max="0.15" step="0.01" value="0">
+        </div>
+        <div class="slider">
+          <div class="row"><span class="lab" id="tempoLbl">Tempo</span></div>
+          <div class="seg" role="radiogroup" aria-labelledby="tempoLbl">
+            <label><input type="radio" name="tempo" value="0.1">0.1×</label>
+            <label><input type="radio" name="tempo" value="0.25" checked>0.25×</label>
+            <label><input type="radio" name="tempo" value="0.5">0.5×</label>
+            <label><input type="radio" name="tempo" value="1">1×</label>
+          </div>
+        </div>
+        <p class="note">Jede Änderung setzt die Kugel an den Start zurück.</p>
+      </section>
+
+      <section class="group" aria-labelledby="h-enum">
+        <h3 id="h-enum">Messwerte und Vorhersage</h3>
+        <div class="tablewrap">
+          <table>
+            <tbody>
+              <tr><th scope="row">Höhe <span class="m">h</span><span class="u">m</span></th><td id="oH"></td></tr>
+              <tr><th scope="row">Geschwindigkeit <span class="m">v</span><span class="u">m/s</span></th><td id="oV"></td></tr>
+              <tr class="hl"><th scope="row">Gesamtenergie <span class="m">½Dx²</span><span class="u">mJ</span></th><td id="oE0"></td></tr>
+              <tr><th scope="row">Grösste Geschwindigkeit <span class="m">v<sub>max</sub></span><span class="u">m/s</span></th><td id="oVmax"></td></tr>
+              <tr><th scope="row">Grösste Höhe <span class="m">z<sub>max</sub></span><span class="u">m</span></th><td id="oZmax"></td></tr>
+              <tr><th scope="row">Nötig für den Looping <span class="m">x<sub>min</sub></span><span class="u">cm</span></th><td id="oXmin"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note" id="loopVerdict"></p>
+      </section>
+
+      <section class="group" aria-labelledby="h-eeq">
+        <h3 id="h-eeq">Energieerhaltung</h3>
+        <div class="eq" aria-label="E ges gleich E Feder plus E kin plus E pot gleich konstant">
+          <span class="term"><span class="m">E<sub>ges</sub></span><small>gesamt</small></span><span>=</span>
+          <span class="term t-f"><span class="m">½Dx²</span><small>Feder</small></span><span>+</span>
+          <span class="term t-k"><span class="m">½mv²</span><small>kinetisch</small></span><span>+</span>
+          <span class="term t-p"><span class="m">mgh</span><small>potentiell</small></span><span>+</span>
+          <span class="term t-q"><span class="m">Q</span><small>Wärme</small></span><span>=</span>
+          <span class="term"><span class="m">const</span><small>&nbsp;</small></span>
+        </div>
+        <p class="note">Oben im Looping muss die Gewichtskraft kleiner sein als die nötige Zentripetalkraft: <span class="m">|F<sub>G</sub>| ≤ |F<sub>ZP</sub>|</span>, also <span class="m">mg ≤ mv²/R</span> oder <span class="m">v² ≥ gR</span>.</p>
+      </section>
+
+      <section class="group" aria-labelledby="h-try2">
+        <h3 id="h-try2">Zum Ausprobieren</h3>
+        <div>
+          <details>
+            <summary>Wie stark muss die Feder mindestens gestaucht sein, damit die Kugel durch den Looping kommt?</summary>
+            <p>Oben braucht sie <span class="m">v² ≥ gR</span>, also <span class="m">E<sub>kin</sub> ≥ ½mgR</span>, dazu kommt <span class="m">E<sub>pot</sub> = mg·2R</span>. Zusammen: <span class="m">½Dx² ≥ 5/2 · mgR</span>, also <span class="m">x ≥ √(5mgR/D)</span>. Mit den Startwerten sind das etwa 5.0 cm. Probiere 4.5 cm und 5.5 cm.</p>
+          </details>
+          <details>
+            <summary>Die Gesamtenergie reicht für die Höhe 2R. Warum fällt die Kugel trotzdem aus dem Looping?</summary>
+            <p>Weil sie oben nicht stehen bleiben darf. Sie braucht dort noch kinetische Energie, sonst kann die Bahn sie nicht auf der Kreisbahn halten. Die Bahn kann nur drücken, nicht ziehen. Ist <span class="m">mv²/R &lt; mg</span>, wird die Kugel von der Gewichtskraft stärker nach unten gezogen, als für die Kreisbahn nötig. Sie löst sich und fliegt auf einer Wurfparabel.</p>
+          </details>
+          <details>
+            <summary>Verdopple die Masse. Was passiert mit <span class="m">v<sub>max</sub></span> und <span class="m">z<sub>max</sub></span>?</summary>
+            <p>Die Feder liefert dieselbe Energie. <span class="m">z<sub>max</sub> = ½Dx²/(mg)</span> wird halb so gross, <span class="m">v<sub>max</sub> = x√(D/m)</span> wird um den Faktor √2 kleiner.</p>
+          </details>
+          <details>
+            <summary>Wie Frage 2 (Puck): Spielt die Form der Rampe eine Rolle für die erreichte Höhe?</summary>
+            <p>Ohne Reibung nicht. Am höchsten Punkt ist <span class="m">v = 0</span>, also ist die ganze Energie potentiell: <span class="m">mgz<sub>max</sub> = E<sub>ges</sub></span>. Darum fliegt die Kugel über das Ende der Rampe hinaus genau bis zur gestrichelten Linie.</p>
+          </details>
+          <details>
+            <summary>Stelle μ = 0.05 ein. Wohin verschwindet die Energie?</summary>
+            <p>Sie verschwindet nicht. Die Reibungskraft verrichtet Arbeit und erzeugt Wärme. Der rote Teil des Balkens wächst, die Gesamtlänge bleibt gleich. Im Looping drückt die Kugel stark auf die Bahn, darum ist dort auch die Reibung gross.</p>
+          </details>
+        </div>
+        <p class="foot">Annahmen: Die Kugel wird als Massenpunkt behandelt, ohne Rotationsenergie (die kommt in Kapitel 8.3). Die Feder ist masselos. <span class="m">g</span> = 9.81 m/s². <span class="m">h</span> ist die Höhe über dem Boden der Bahn. Die Kugel bleibt im Looping auf der Bahn, solange die Bahn auf sie drückt. Der Looping ist flach gezeichnet, in Wirklichkeit sind Ein- und Ausgang seitlich versetzt.</p>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<div class="qr-overlay" id="qr" hidden role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+  <div class="qr-box">
+    <h2 id="qrTitle">Mit dem Handy öffnen</h2>
+    <div class="qr-code" id="qrCode"></div>
+    <p class="qr-url" id="qrUrlText"></p>
+    <label for="qrUrl">Adresse dieser Seite</label>
+    <input type="url" id="qrUrl" placeholder="https://…" autocomplete="off" spellcheck="false">
+    <div class="qr-row"><button class="btn small" id="qrClose" type="button">Schliessen</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // Address put into the QR code when the page runs inside a frame (e.g. the claude.ai viewer).
+  // Hosted on its own, the page uses its own address. Put the GitHub Pages address here.
+  const SHARE_URL = 'https://david-1-2-3.github.io/arbeit-energie/';
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const MATH = '"STIX Two Text", "Cambria Math", "Times New Roman", serif';
+  const BODY = '"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif';
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function fmt(v, d = 0) {
+    if (!isFinite(v)) return '—';
+    if (Math.abs(v) < 0.5 * Math.pow(10, -d)) v = 0;
+    return v.toLocaleString('de-CH', { minimumFractionDigits: d, maximumFractionDigits: d }).replace('-', '−');
+  }
+
+  /* ---------- colours and drawing helpers ---------- */
+  const C = {};
+  const TOKENS = ['floor', 'grid', 'grid2', 'mark', 'muted', 'ink', 'halo', 'track', 'ground', 'block', 'blockedge', 'ball', 'spring', 'equi',
+    'fext', 'ffield', 'pos', 'neg', 'zero', 'efeder', 'ekin', 'epot', 'heat', 'accent', 'surface'];
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    for (const k of TOKENS) C[k] = cs.getPropertyValue('--' + k).trim();
+    dirtyW = dirtyE = true;
+  }
+
+  function fit(cv) {
+    const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(r.width * d)), h = Math.max(1, Math.round(r.height * d));
+    if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    return { ctx, w: r.width, h: r.height };
+  }
+
+  function head(ctx, x, y, ux, uy, size) {
+    const bx = x - ux * size, by = y - uy * size, hw = size * 0.55;
+    ctx.beginPath(); ctx.moveTo(x, y);
+    ctx.lineTo(bx - uy * hw, by + ux * hw); ctx.lineTo(bx + uy * hw, by - ux * hw); ctx.closePath();
+  }
+  function arrow(ctx, x0, y0, dx, dy, col, lw) {
+    const L = Math.hypot(dx, dy);
+    if (L < 3) return false;
+    const ux = dx / L, uy = dy / L, hl = Math.min(L * 0.55, lw * 3.6);
+    const tx = x0 + dx, ty = y0 + dy, bx = tx - ux * hl, by = ty - uy * hl;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = C.halo; ctx.lineWidth = lw + 3;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(bx, by); ctx.stroke();
+    ctx.lineWidth = 3; head(ctx, tx, ty, ux, uy, hl); ctx.stroke();
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = lw;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(bx + ux, by + uy); ctx.stroke();
+    head(ctx, tx, ty, ux, uy, hl); ctx.fill();
+    return true;
+  }
+  function vlabel(ctx, x, y, sym, sub, col, fs, vec = true) {
+    ctx.save();
+    const f1 = `italic ${fs}px ${MATH}`, f2 = `italic ${Math.round(fs * 0.68)}px ${MATH}`;
+    ctx.font = f1; const w1 = ctx.measureText(sym).width, wa = ctx.measureText(sym[0]).width;
+    ctx.font = f2; const w2 = sub ? ctx.measureText(sub).width : 0;
+    const x0 = x - (w1 + w2 + 1) / 2, base = y + fs * 0.3;
+    ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.strokeStyle = C.halo; ctx.lineWidth = 4; ctx.fillStyle = col;
+    ctx.font = f1; ctx.strokeText(sym, x0, base); ctx.fillText(sym, x0, base);
+    if (sub) { ctx.font = f2; ctx.strokeText(sub, x0 + w1 + 1, base + fs * 0.2); ctx.fillText(sub, x0 + w1 + 1, base + fs * 0.2); }
+    if (vec) {
+      const ay = base - fs * 0.8, ax0 = x0 + fs * 0.06, ax1 = x0 + Math.max(wa, fs * 0.45) + fs * 0.1, hs = fs * 0.16;
+      for (const [c, lw] of [[C.halo, 3.5], [col, Math.max(1.2, fs * 0.075)]]) {
+        ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.beginPath();
+        ctx.moveTo(ax0, ay); ctx.lineTo(ax1, ay);
+        ctx.moveTo(ax1 - hs, ay - hs * 0.6); ctx.lineTo(ax1, ay); ctx.lineTo(ax1 - hs, ay + hs * 0.6);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+  function text(ctx, s, x, y, col, font, align = 'center', base = 'middle') {
+    ctx.save(); ctx.font = font; ctx.textAlign = align; ctx.textBaseline = base;
+    ctx.lineJoin = 'round'; ctx.strokeStyle = C.halo; ctx.lineWidth = 4; ctx.strokeText(s, x, y);
+    ctx.fillStyle = col; ctx.fillText(s, x, y); ctx.restore();
+  }
+  // left-aligned italic text made of pieces, flag 1 = subscript
+  function subText(ctx, x, y, parts, col, fs) {
+    ctx.save(); ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+    for (const [t, sub] of parts) {
+      ctx.font = `italic ${sub ? Math.round(fs * 0.68) : fs}px ${MATH}`;
+      const yy = sub ? y + fs * 0.3 : y;
+      ctx.strokeStyle = C.halo; ctx.lineWidth = 4; ctx.strokeText(t, x, yy);
+      ctx.fillStyle = col; ctx.fillText(t, x, yy);
+      x += ctx.measureText(t).width + (sub ? 1 : 0);
+    }
+    ctx.restore();
+  }
+  function setPlayIcon(btn, playing) {
+    btn.querySelector('.i-pause').hidden = !playing;
+    btn.querySelector('.i-play').hidden = playing;
+    btn.setAttribute('aria-label', playing ? 'Pause' : 'Weiter');
+  }
+
+  /* =====================================================================
+     PAGE 1: work along a path
+     ===================================================================== */
+  const GRID = 25;
+  const KC = 8.9875e9, QTEST = 10e-9, SOFT = 0.4;   // softening in cm, keeps the field finite at Q
+  const QPOS = { x: 12.5, y: 12.5 };
+  const QMIN = 2;                                    // A and C stay this far from Q (cm)
+  const SPEED = 10;                                   // units per second along the path
+  const DEF = { g: { A: { x: 10, y: 0 }, C: { x: 20, y: 20 } }, e: { A: { x: 4, y: 22 }, C: { x: 20, y: 18 } } };
+  const ROUTE_NAME = { b: 'Über B', line: 'Gerade', stairs: 'Treppe', detour: 'Umweg', draw: 'Eigener Weg' };
+
+  const P = {
+    field: 'g', route: 'b', who: 'ext', FG: 1000, Q: 100,
+    A: { ...DEF.g.A }, C: { ...DEF.g.C }, drawn: null,
+    path: null, prog: 0, running: false, done: false, paused: false,
+    log: [], drawCount: 0, drag: null, stroke: null, view: null,
+  };
+  let dirtyW = true;
+
+  const unit = () => P.field === 'g' ? 'm' : 'cm';
+  const us = () => P.field === 'g' ? 1 : 0.01;        // units → metres
+  const wUnit = () => P.field === 'g' ? 'J' : 'µJ';
+  const wFac = () => P.field === 'g' ? 1 : 1e6;
+  const wDig = () => P.field === 'g' ? 0 : 1;
+  const qCharge = () => P.Q * 1e-9;
+
+  // field force on the body (N)
+  function fieldForce(x, y) {
+    if (P.field === 'g') return { x: 0, y: -P.FG };
+    const dx = (x - QPOS.x) * 0.01, dy = (y - QPOS.y) * 0.01, e = SOFT * 0.01;
+    const r2 = dx * dx + dy * dy + e * e, f = KC * qCharge() * QTEST / (r2 * Math.sqrt(r2));
+    return { x: f * dx, y: f * dy };
+  }
+  // potential energy (J)
+  function potE(p) {
+    if (P.field === 'g') return P.FG * p.y;
+    const dx = (p.x - QPOS.x) * 0.01, dy = (p.y - QPOS.y) * 0.01, e = SOFT * 0.01;
+    return KC * qCharge() * QTEST / Math.sqrt(dx * dx + dy * dy + e * e);
+  }
+  const rOf = p => Math.hypot(p.x - QPOS.x, p.y - QPOS.y);
+  const sign = () => P.who === 'ext' ? -1 : 1;           // applied force = −field force
+  const appliedForce = (x, y) => { const F = fieldForce(x, y), s = sign(); return { x: s * F.x, y: s * F.y }; };
+  const wFormula = () => -sign() * (potE(P.C) - potE(P.A)) * wFac();
+
+  function vertices() {
+    const A = P.A, Cc = P.C, dx = Cc.x - A.x, dy = Cc.y - A.y;
+    switch (P.route) {
+      case 'line': return [A, Cc];
+      case 'b': return [A, { x: A.x, y: (A.y + Cc.y) / 2 }, Cc];
+      case 'stairs': {
+        const v = [A], n = 4;
+        for (let i = 1; i <= n; i++) { v.push({ x: A.x + dx * i / n, y: A.y + dy * (i - 1) / n }); v.push({ x: A.x + dx * i / n, y: A.y + dy * i / n }); }
+        return v;
+      }
+      case 'detour': {
+        const top = 27, p1 = { x: clamp(A.x - 8, -3, 28), y: top }, p2 = { x: clamp(Cc.x + 8, -3, 28), y: top }, v = [];
+        for (let i = 0; i <= 80; i++) {
+          const t = i / 80, u = 1 - t;
+          v.push({
+            x: clamp(u * u * u * A.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * Cc.x, 0.2, GRID - 0.2),
+            y: clamp(u * u * u * A.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * Cc.y, 0.2, GRID - 0.2),
+          });
+        }
+        v[0] = A; v[v.length - 1] = Cc;
+        return v;
+      }
+      case 'draw': return P.drawn ? [A, ...P.drawn, Cc] : null;
+    }
+  }
+
+  function resample(vs, h) {
+    const out = [vs[0]];
+    for (let i = 1; i < vs.length; i++) {
+      const a = vs[i - 1], b = vs[i], L = Math.hypot(b.x - a.x, b.y - a.y), n = Math.max(1, Math.ceil(L / h));
+      if (L < 1e-9) continue;
+      for (let k = 1; k <= n; k++) out.push({ x: a.x + (b.x - a.x) * k / n, y: a.y + (b.y - a.y) * k / n });
+    }
+    return out;
+  }
+
+  function buildPath() {
+    const vs = vertices();
+    if (!vs) { P.path = null; return; }
+    const pts = resample(vs, 0.05), s = [0], W = [0], dW = [0], f = wFac(), m = us();
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i], dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+      const F = appliedForce((a.x + b.x) / 2, (a.y + b.y) / 2);
+      const w = (F.x * dx + F.y * dy) * m * f;
+      s.push(s[i - 1] + d); W.push(W[i - 1] + w);
+      const Fn = Math.hypot(F.x, F.y);
+      dW.push(Fn * d > 0 ? (F.x * dx + F.y * dy) / (Fn * d) : 0);   // cos of angle between F and ds
+    }
+    P.path = { vs, pts, s, W, cos: dW, L: s[s.length - 1] };
+  }
+
+  function idxAt(prog) {
+    const s = P.path.s;
+    let lo = 0, hi = s.length - 1;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (s[mid] <= prog) lo = mid; else hi = mid; }
+    return lo;
+  }
+  function posAt(prog) {
+    const i = idxAt(prog), p = P.path.pts, s = P.path.s;
+    if (i >= p.length - 1) return { p: p[p.length - 1], i: p.length - 1, W: P.path.W[p.length - 1] };
+    const t = (prog - s[i]) / Math.max(1e-9, s[i + 1] - s[i]);
+    return {
+      p: { x: p[i].x + (p[i + 1].x - p[i].x) * t, y: p[i].y + (p[i + 1].y - p[i].y) * t },
+      i, W: P.path.W[i] + (P.path.W[i + 1] - P.path.W[i]) * t,
+      dir: { x: p[i + 1].x - p[i].x, y: p[i + 1].y - p[i].y },
+    };
+  }
+
+  function invalidate(clearLog) {
+    P.running = false; P.done = false; P.prog = 0; P.paused = false;
+    if (clearLog) { P.log = []; P.drawCount = 0; }
+    buildPath(); updateW(true); dirtyW = true;
+  }
+
+  function startRun() {
+    if (!P.path) return;
+    if (P.done || P.prog >= P.path.L) P.prog = 0;
+    P.done = false; P.running = true; P.paused = false;
+    updateW(true);
+  }
+  function finishRun() {
+    P.running = false; P.done = true; P.prog = P.path.L;
+    let name = ROUTE_NAME[P.route];
+    if (P.route === 'draw') name += ' ' + (++P.drawCount);
+    const k = Math.max(1, Math.floor(P.path.s.length / 300)), curve = [];
+    for (let i = 0; i < P.path.s.length; i += k) curve.push([P.path.s[i], P.path.W[i]]);
+    curve.push([P.path.L, P.path.W[P.path.W.length - 1]]);
+    const entry = { name, L: P.path.L, W: P.path.W[P.path.W.length - 1], curve, route: P.route };
+    const same = P.log.findIndex(e => e.route === P.route && P.route !== 'draw');
+    if (same >= 0) P.log.splice(same, 1);
+    P.log.push(entry);
+    if (P.log.length > 7) P.log.shift();
+    updateW(true);
+  }
+
+  /* ---- page 1 drawing ---- */
+  const cvW = $('#cvW'), cvG = $('#cvG');
+
+  function drawWork() {
+    const { ctx, w, h } = fit(cvW);
+    const ml = 40, mb = 34, mt = 14, mr = 14;
+    const sc = Math.min((w - ml - mr) / GRID, (h - mt - mb) / GRID);
+    const ox = ml, oy = mt + GRID * sc;
+    const X = x => ox + x * sc, Y = y => oy - y * sc;
+    P.view = { ox, oy, sc };
+    ctx.clearRect(0, 0, w, h);
+
+    // grid
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= GRID; i++) {
+      ctx.strokeStyle = i % 5 === 0 ? C.grid2 : C.grid;
+      ctx.beginPath(); ctx.moveTo(X(i), Y(0)); ctx.lineTo(X(i), Y(GRID)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(X(0), Y(i)); ctx.lineTo(X(GRID), Y(i)); ctx.stroke();
+    }
+    ctx.fillStyle = C.muted; ctx.font = `12px ${BODY}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let i = 0; i <= GRID; i += 5) ctx.fillText(String(i), X(i), Y(0) + 5);
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let i = 0; i <= GRID; i += 5) ctx.fillText(String(i), X(0) - 6, Y(i));
+    ctx.font = `italic 14px ${MATH}`; ctx.fillStyle = C.ink;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText(`x / ${unit()}`, X(GRID), Y(0) + 18);
+    ctx.save(); ctx.translate(12, Y(GRID)); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(`y / ${unit()}`, 0, 0); ctx.restore();
+
+    // field: equipotentials (dashed) and field direction
+    ctx.save();
+    ctx.beginPath(); ctx.rect(X(0), Y(GRID), GRID * sc, GRID * sc); ctx.clip();
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = C.equi; ctx.lineWidth = 1.2;
+    if (P.field === 'g') {
+      for (let y = 5; y < GRID; y += 5) { ctx.beginPath(); ctx.moveTo(X(0), Y(y)); ctx.lineTo(X(GRID), Y(y)); ctx.stroke(); }
+      ctx.setLineDash([]);
+      for (let x = 2.5; x < GRID; x += 5) for (let y = 4; y < GRID; y += 5) arrow(ctx, X(x), Y(y), 0, sc * 1.6, C.equi, 1.5);
+    } else {
+      for (let r = 3; r <= 18; r += 3) { ctx.beginPath(); ctx.arc(X(QPOS.x), Y(QPOS.y), r * sc, 0, 2 * Math.PI); ctx.stroke(); }
+      ctx.setLineDash([]);
+      if (P.Q !== 0) {
+        const out = P.Q > 0;
+        for (let k = 0; k < 16; k++) {
+          const a = k * Math.PI / 8 + Math.PI / 16, c = Math.cos(a), s = Math.sin(a);
+          ctx.strokeStyle = C.equi; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(X(QPOS.x + c * 1.6), Y(QPOS.y + s * 1.6)); ctx.lineTo(X(QPOS.x + c * 20), Y(QPOS.y + s * 20)); ctx.stroke();
+          for (const r of [4.5, 10.5]) {
+            const r0 = out ? r : r + 1.2, r1 = out ? r + 1.2 : r;
+            arrow(ctx, X(QPOS.x + c * r0), Y(QPOS.y + s * r0), (c * (r1 - r0)) * sc, -(s * (r1 - r0)) * sc, C.equi, 1.3);
+          }
+        }
+      }
+    }
+    ctx.restore();
+
+    // charge Q
+    if (P.field === 'e') {
+      const R = Math.max(12, sc * 1.1);
+      ctx.beginPath(); ctx.arc(X(QPOS.x), Y(QPOS.y), R, 0, 2 * Math.PI);
+      ctx.fillStyle = P.Q >= 0 ? C.ffield : C.epot; ctx.fill();
+      ctx.strokeStyle = C.halo; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = `700 ${Math.round(R * 1.3)}px ${BODY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(P.Q > 0 ? '+' : P.Q < 0 ? '−' : '0', X(QPOS.x), Y(QPOS.y) + 1);
+      text(ctx, 'Q', X(QPOS.x) + R + 9, Y(QPOS.y) - R, C.ink, `italic 16px ${MATH}`);
+    }
+
+    // path
+    const path = P.path;
+    if (path) {
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.setLineDash([2, 6]); ctx.strokeStyle = C.mark; ctx.lineWidth = 2;
+      ctx.beginPath(); path.pts.forEach((p, i) => i ? ctx.lineTo(X(p.x), Y(p.y)) : ctx.moveTo(X(p.x), Y(p.y))); ctx.stroke();
+      ctx.setLineDash([]);
+      // travelled part coloured by sign of F·ds
+      const iEnd = P.prog > 0 ? idxAt(P.prog) : -1, cur = P.prog > 0 ? posAt(P.prog) : null;
+      ctx.lineWidth = 5;
+      let col = null;
+      ctx.beginPath();
+      for (let i = 1; i <= iEnd + 1 && i < path.pts.length; i++) {
+        const c = path.cos[i], k = Math.abs(c) < 0.03 ? C.zero : c > 0 ? C.pos : C.neg;
+        const a = path.pts[i - 1], b = i <= iEnd ? path.pts[i] : cur.p;
+        if (k !== col) { if (col) ctx.stroke(); ctx.strokeStyle = col = k; ctx.beginPath(); ctx.moveTo(X(a.x), Y(a.y)); }
+        ctx.lineTo(X(b.x), Y(b.y));
+      }
+      if (col) ctx.stroke();
+      // waypoint B
+      if (P.route === 'b') {
+        const B = path.vs[1];
+        ctx.fillStyle = C.mark; ctx.beginPath(); ctx.arc(X(B.x), Y(B.y), 4, 0, 2 * Math.PI); ctx.fill();
+        text(ctx, 'B', X(B.x) - 14, Y(B.y), C.ink, `700 15px ${BODY}`);
+      }
+    } else if (P.route === 'draw') {
+      text(ctx, 'Zeichne einen Weg von A nach C', X(GRID / 2), Y(GRID - 1.5), C.ink, `700 15px ${BODY}`);
+    }
+    // stroke being drawn
+    if (P.stroke && P.stroke.length > 1) {
+      ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.setLineDash([]);
+      ctx.beginPath(); P.stroke.forEach((p, i) => i ? ctx.lineTo(X(p.x), Y(p.y)) : ctx.moveTo(X(p.x), Y(p.y))); ctx.stroke();
+    }
+
+    // end markers A and C
+    for (const [k, p] of [['A', P.A], ['C', P.C]]) {
+      ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), 11, 0, 2 * Math.PI);
+      ctx.fillStyle = C.surface; ctx.fill();
+      ctx.strokeStyle = P.drag === k ? C.accent : C.mark; ctx.lineWidth = P.drag === k ? 3 : 2; ctx.stroke();
+      ctx.fillStyle = C.ink; ctx.font = `700 13px ${BODY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(k, X(p.x), Y(p.y) + 1);
+    }
+
+    // body and forces
+    if (path) {
+      const cur = posAt(P.prog), bp = cur.p, bx = X(bp.x), by = Y(bp.y);
+      const Ff = fieldForce(bp.x, bp.y), Fa = appliedForce(bp.x, bp.y);
+      let k;
+      if (P.field === 'g') k = 4 * sc / 1000;
+      else { const ref = Math.abs(KC * qCharge() * QTEST) / 0.1 / 0.1; k = ref > 0 ? 4 * sc / ref : 0; }
+      const cap = 8 * sc;
+      const vecLen = F => { const L = Math.hypot(F.x, F.y) * k; return L > cap ? cap / L : 1; };
+      const fe = { x: -Ff.x, y: -Ff.y };   // applied force (crane / hand) always = −field force
+      const s1 = vecLen(Ff), s2 = vecLen(fe);
+      // body
+      if (P.field === 'g') {
+        const S = Math.max(14, sc * 1.3);
+        ctx.fillStyle = C.block; ctx.strokeStyle = C.blockedge; ctx.lineWidth = 2;
+        ctx.fillRect(bx - S / 2, by - S / 2, S, S); ctx.strokeRect(bx - S / 2, by - S / 2, S, S);
+      } else {
+        ctx.beginPath(); ctx.arc(bx, by, 9, 0, 2 * Math.PI); ctx.fillStyle = C.ffield; ctx.fill();
+        ctx.strokeStyle = C.halo; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#fff'; ctx.font = `700 14px ${BODY}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('+', bx, by + 1);
+        text(ctx, 'q', bx - 15, by + 13, C.ink, `italic 15px ${MATH}`);
+      }
+      const subF = P.field === 'g' ? 'G' : 'el';
+      if (arrow(ctx, bx, by, Ff.x * k * s1, -Ff.y * k * s1, C.ffield, 3.2)) {
+        const L = Math.hypot(Ff.x, Ff.y) * k * s1;
+        vlabel(ctx, bx + Ff.x * k * s1 * (1 + 14 / L) + 12, by - Ff.y * k * s1 * (1 + 14 / L), 'F', subF, C.ffield, 17);
+      }
+      if (arrow(ctx, bx, by, fe.x * k * s2, -fe.y * k * s2, C.fext, 3.2)) {
+        const L = Math.hypot(fe.x, fe.y) * k * s2;
+        vlabel(ctx, bx + fe.x * k * s2 * (1 + 14 / L) + 12, by - fe.y * k * s2 * (1 + 14 / L), 'F', '', C.fext, 17);
+      }
+      if (cur.dir && P.prog > 0 && !P.done) {
+        const d = Math.hypot(cur.dir.x, cur.dir.y), L = 26;
+        arrow(ctx, bx, by, cur.dir.x / d * L, -cur.dir.y / d * L, C.ink, 2);
+        vlabel(ctx, bx + cur.dir.x / d * (L + 14), by - cur.dir.y / d * (L + 14), 'ds', '', C.ink, 15);
+      }
+    }
+  }
+
+  function drawGraph() {
+    const { ctx, w, h } = fit(cvG);
+    ctx.clearRect(0, 0, w, h);
+    const ml = 58, mr = 14, mt = 14, mb = 30;
+    const curves = P.log.map(e => e.curve);
+    let Lmax = P.path ? P.path.L : 1, Wmin = 0, Wmax = 0;
+    for (const e of P.log) Lmax = Math.max(Lmax, e.L);
+    const consider = arr => { for (const v of arr) { Wmin = Math.min(Wmin, v); Wmax = Math.max(Wmax, v); } };
+    if (P.path) consider(P.path.W);
+    for (const c of curves) consider(c.map(q => q[1]));
+    if (Wmax - Wmin < 1e-9) { Wmax = 1; Wmin = -1; }
+    const pad = (Wmax - Wmin) * 0.1; Wmax += pad; Wmin -= pad;
+    Lmax *= 1.02;
+    const X = s => ml + s / Lmax * (w - ml - mr), Y = v => mt + (Wmax - v) / (Wmax - Wmin) * (h - mt - mb);
+
+    // axes
+    ctx.strokeStyle = C.grid2; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(ml, mt); ctx.lineTo(ml, h - mb); ctx.lineTo(w - mr, h - mb); ctx.stroke();
+    ctx.strokeStyle = C.mark; ctx.beginPath(); ctx.moveTo(ml, Y(0)); ctx.lineTo(w - mr, Y(0)); ctx.stroke();
+    ctx.fillStyle = C.muted; ctx.font = `12px ${BODY}`; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    const Wtot = wFormula();
+    ctx.fillText('0', ml - 6, Y(0));
+    if (Math.abs(Wtot) > (Wmax - Wmin) * 0.08) ctx.fillText(fmt(Wtot, wDig()), ml - 6, Y(Wtot));
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    ctx.font = `italic 14px ${MATH}`; ctx.fillStyle = C.ink;
+    ctx.fillText(`s / ${unit()}`, w - mr, h - mb + 8);
+    ctx.textAlign = 'left'; ctx.fillText(`W / ${wUnit()}`, 4, mt - 6 < 0 ? 0 : mt - 6);
+    ctx.font = `12px ${BODY}`; ctx.fillStyle = C.muted; ctx.textAlign = 'center';
+    const step = Lmax > 80 ? 20 : Lmax > 40 ? 10 : 5;
+    for (let s = step; X(s) < w - mr - 42; s += step) ctx.fillText(String(s), X(s), h - mb + 6);
+
+    // end value for every path
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = C.accent; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(ml, Y(Wtot)); ctx.lineTo(w - mr, Y(Wtot)); ctx.stroke(); ctx.setLineDash([]);
+
+    ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    for (const c of curves) {
+      ctx.strokeStyle = C.zero; ctx.lineWidth = 1.6; ctx.beginPath();
+      c.forEach((q, i) => i ? ctx.lineTo(X(q[0]), Y(q[1])) : ctx.moveTo(X(q[0]), Y(q[1]))); ctx.stroke();
+      const e = c[c.length - 1]; ctx.fillStyle = C.zero; ctx.beginPath(); ctx.arc(X(e[0]), Y(e[1]), 3, 0, 2 * Math.PI); ctx.fill();
+    }
+    if (P.path && P.prog > 0) {
+      const iEnd = idxAt(P.prog), cur = posAt(P.prog);
+      ctx.strokeStyle = C.accent; ctx.lineWidth = 3; ctx.beginPath();
+      for (let i = 0; i <= iEnd; i++) { const x = X(P.path.s[i]), y = Y(P.path.W[i]); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      ctx.lineTo(X(P.prog), Y(cur.W)); ctx.stroke();
+      ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(X(P.prog), Y(cur.W), 4.5, 0, 2 * Math.PI); ctx.fill();
+    }
+  }
+
+  /* ---- page 1 text and readouts ---- */
+  let lastKey = '';
+  function updateW(force) {
+    const g = P.field === 'g', ext = P.who === 'ext', u = wUnit(), dg = wDig();
+    const Wtot = wFormula();
+    const cur = P.path ? posAt(P.prog) : null;
+
+    // readouts
+    $('#uL').textContent = unit(); $('#uW1').textContent = $('#uW2').textContent = $('#uW3').textContent = u;
+    $('#oL').textContent = P.path ? fmt(P.prog, 1) + ' / ' + fmt(P.path.L, 1) : '—';
+    $('#oWnow').textContent = cur ? fmt(cur.W, dg) : '—';
+    $('#oWint').textContent = P.path ? fmt(P.path.W[P.path.W.length - 1], dg) : '—';
+    $('#oWform').textContent = fmt(Wtot, dg);
+    explainW();
+
+    if (!force) return;
+    const sgn = ext ? '' : '−';
+    $('#formLbl').innerHTML = g
+      ? `Aus Formel <span class="m">${sgn}F<sub>G</sub>Δh</span>, Δh = ${fmt(P.C.y - P.A.y, 1)} m`
+      : `Aus Formel <span class="m">${sgn}kQq(1/r<sub>C</sub> − 1/r<sub>A</sub>)</span>`;
+    $('#whoExt').textContent = g ? 'Kran' : 'Hand';
+    $('#whoField').textContent = g ? 'Gewichtskraft' : 'Elektrische Kraft';
+    $('#whoNote').innerHTML = ext
+      ? `Arbeit, die ${g ? 'der Kran' : 'die Hand'} mit <span class="m t-ext"><span class="vec">F</span></span> verrichtet. ${g ? 'Er' : 'Sie'} hält der ${g ? 'Gewichtskraft' : 'elektrischen Kraft'} immer genau das Gleichgewicht: <span class="m t-ext"><span class="vec">F</span></span> = −<span class="m t-field"><span class="vec">F</span><sub>${g ? 'G' : 'el'}</sub></span>. Diese Arbeit wird als potentielle Energie gespeichert: <span class="m">W = ΔE<sub>pot</sub></span>.`
+      : `Arbeit, die das Feld mit <span class="m t-field"><span class="vec">F</span><sub>${g ? 'G' : 'el'}</sub></span> verrichtet. Sie hat dasselbe Mass, aber das umgekehrte Vorzeichen: <span class="m">W<sub>Feld</sub> = −ΔE<sub>pot</sub></span>.`;
+    $('#eqG').hidden = !g; $('#eqE').hidden = g;
+    $('#eqNote').innerHTML = g
+      ? 'Nur die Höhendifferenz <span class="m">Δh</span> zwischen A und C zählt, nicht der Weg. Darum gilt <span class="m">E<sub>pot</sub> = mgh</span>.'
+      : `Die Kraft <span class="m">F<sub>el</sub> = kQq/r²</span> ist nicht konstant. Trotzdem zählen nur die Abstände von <span class="m">Q</span>: hier <span class="m">r<sub>A</sub></span> = ${fmt(rOf(P.A), 1)} cm, <span class="m">r<sub>C</sub></span> = ${fmt(rOf(P.C), 1)} cm. Mehr dazu in Kapitel 11.`;
+    $('#fgOut').textContent = `${fmt(P.FG)} N (m = ${fmt(P.FG / 9.81, 0)} kg)`;
+    $('#qOut').textContent = `${fmt(P.Q)} nC`;
+    $('#sl-fg').hidden = !g; $('#sl-q').hidden = g;
+
+    // comparison log
+    const body = $('#logBody');
+    body.textContent = '';
+    for (const e of P.log) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<th scope="row"></th><td>${fmt(e.L, 1)} ${unit()}</td><td>${fmt(e.W, dg)} ${u}</td>`;
+      tr.firstChild.textContent = e.name;
+      body.append(tr);
+    }
+    $('#logEmpty').hidden = P.log.length > 0;
+
+    // play / go buttons
+    $('#wGo').textContent = P.done ? 'Nochmal abfahren' : P.running ? 'Unterwegs …' : 'Weg abfahren';
+    $('#wGo').disabled = !P.path || P.running;
+    $('#wPause').disabled = !P.running;
+    setPlayIcon($('#wPause'), !P.paused);
+  }
+
+  function explainW() {
+    const g = P.field === 'g', ext = P.who === 'ext', u = wUnit(), dg = wDig();
+    const Fs = ext ? `<span class="m t-ext"><span class="vec">F</span></span>` : `<span class="m t-field"><span class="vec">F</span><sub>${g ? 'G' : 'el'}</sub></span>`;
+    const ds = `<span class="m">d<span class="vec">s</span></span>`;
+    let pill = 'Bereit', st = '', title, txt;
+    if (!P.path) {
+      title = 'Weg zeichnen';
+      txt = 'Zeichne mit Maus oder Finger einen beliebigen Weg ins Feld. Er wird automatisch mit A und C verbunden.';
+    } else if (P.done) {
+      pill = 'Am Ziel'; st = 'end';
+      const W = P.path.W[P.path.W.length - 1];
+      title = `W = ${fmt(W, dg)} ${u}`;
+      const sameAll = P.log.length > 1 && P.log.every(e => Math.abs(e.W - W) <= Math.max(1e-6, Math.abs(W) * 0.01));
+      txt = sameAll
+        ? `Alle ${P.log.length} Wege ergeben dieselbe Arbeit, obwohl sie verschieden lang sind. Die Arbeit hängt nur von A und C ab: Die Kraft ist konservativ.`
+        : `Auf diesem Weg (${fmt(P.path.L, 1)} ${unit()} lang) ergibt die Summe aller ${Fs} · ${ds} genau ${fmt(W, dg)} ${u}. Wähle einen anderen Weg und vergleiche.`;
+    } else if (P.prog <= 0) {
+      title = 'Von A nach C';
+      txt = `Unterwegs wird jedes kleine Wegstück ${ds} mit der Kraft ${Fs} multipliziert (Skalarprodukt) und aufsummiert: <span class="m">W = ∫${Fs} · ${ds}</span>. Grün: Arbeit kommt dazu. Orange: Arbeit wird abgezogen. Grau: keine Arbeit.`;
+    } else {
+      pill = 'Unterwegs'; st = 'on';
+      const c = P.path.cos[Math.min(P.path.cos.length - 1, idxAt(P.prog) + 1)];
+      if (Math.abs(c) < 0.03) {
+        title = 'Kraft senkrecht zum Weg';
+        txt = `${Fs} steht senkrecht auf ${ds}, also ist ${Fs} · ${ds} = 0. Auf diesem Stück ändert sich <span class="m">W</span> nicht.`;
+      } else if (c > 0) {
+        title = 'Kraft hat einen Anteil in Wegrichtung';
+        txt = `Der Winkel zwischen ${Fs} und ${ds} ist kleiner als 90°: ${Fs} · ${ds} &gt; 0, die Arbeit <span class="m">W</span> wächst. Je paralleler, desto schneller.`;
+      } else {
+        title = 'Kraft hat einen Anteil gegen den Weg';
+        txt = `Der Winkel zwischen ${Fs} und ${ds} ist grösser als 90°: ${Fs} · ${ds} &lt; 0, die Arbeit <span class="m">W</span> nimmt ab.`;
+      }
+    }
+    const key = pill + title + txt;
+    if (key === lastKey) return;
+    lastKey = key;
+    const pe = $('#wPill'); pe.textContent = pill; pe.dataset.state = st;
+    $('#wTitle').textContent = title; $('#wText').innerHTML = txt;
+  }
+
+  /* ---- page 1 input ---- */
+  function toWorld(ev) {
+    const r = cvW.getBoundingClientRect(), V = P.view;
+    return { x: (ev.clientX - r.left - V.ox) / V.sc, y: (V.oy - (ev.clientY - r.top)) / V.sc, px: ev.clientX - r.left, py: ev.clientY - r.top };
+  }
+  function placeMarker(p) {
+    let x = clamp(Math.round(p.x * 2) / 2, 0, GRID), y = clamp(Math.round(p.y * 2) / 2, 0, GRID);
+    if (P.field === 'e') {
+      const dx = x - QPOS.x, dy = y - QPOS.y, r = Math.hypot(dx, dy);
+      if (r < QMIN) { const f = r > 1e-6 ? QMIN / r : 1; x = QPOS.x + (r > 1e-6 ? dx * f : QMIN); y = QPOS.y + (r > 1e-6 ? dy * f : 0); }
+    }
+    return { x, y };
+  }
+  cvW.addEventListener('pointerdown', ev => {
+    if (!P.view) return;
+    const p = toWorld(ev), V = P.view;
+    for (const k of ['C', 'A']) {
+      const m = P[k];
+      if (Math.hypot(p.px - (V.ox + m.x * V.sc), p.py - (V.oy - m.y * V.sc)) < 22) {
+        P.drag = k; cvW.setPointerCapture(ev.pointerId); dirtyW = true; return;
+      }
+    }
+    if (p.x < -0.5 || p.x > GRID + 0.5 || p.y < -0.5 || p.y > GRID + 0.5) return;
+    P.stroke = [{ x: clamp(p.x, 0, GRID), y: clamp(p.y, 0, GRID) }];
+    cvW.setPointerCapture(ev.pointerId);
+    ev.preventDefault();
+  });
+  cvW.addEventListener('pointermove', ev => {
+    if (!P.view) return;
+    const p = toWorld(ev);
+    if (P.drag) {
+      const np = placeMarker(p), old = P[P.drag];
+      if (np.x !== old.x || np.y !== old.y) { P[P.drag] = np; invalidate(true); }
+    } else if (P.stroke) {
+      const q = { x: clamp(p.x, 0, GRID), y: clamp(p.y, 0, GRID) }, last = P.stroke[P.stroke.length - 1];
+      if (Math.hypot(q.x - last.x, q.y - last.y) > 0.15) { P.stroke.push(q); dirtyW = true; }
+    }
+  });
+  function endPointer() {
+    if (P.drag) { P.drag = null; dirtyW = true; }
+    if (P.stroke) {
+      const s = P.stroke; P.stroke = null;
+      if (s.length > 3) {
+        P.drawn = s; P.route = 'draw';
+        $$('input[name="route"]').forEach(r => r.checked = r.value === 'draw');
+        invalidate(false); startRun();
+      }
+      dirtyW = true;
+    }
+  }
+  cvW.addEventListener('pointerup', endPointer);
+  cvW.addEventListener('pointercancel', endPointer);
+
+  $$('input[name="route"]').forEach(r => r.addEventListener('change', () => { P.route = r.value; invalidate(false); }));
+  $$('input[name="who"]').forEach(r => r.addEventListener('change', () => { P.who = r.value; invalidate(true); }));
+  $('#fg').addEventListener('input', e => { P.FG = +e.target.value; invalidate(true); });
+  $('#qq').addEventListener('input', e => { P.Q = +e.target.value; invalidate(true); });
+  $('#wGo').addEventListener('click', startRun);
+  $('#wPause').addEventListener('click', () => { P.paused = !P.paused; updateW(true); });
+  $('#wReset').addEventListener('click', () => {
+    P.A = { ...DEF[P.field].A }; P.C = { ...DEF[P.field].C }; P.drawn = null; invalidate(true);
+  });
+  $$('.frames [data-field]').forEach(b => b.addEventListener('click', () => setField(b.dataset.field, true)));
+
+  function setField(f, setHash) {
+    if (P.field !== f) {
+      P.field = f; P.A = { ...DEF[f].A }; P.C = { ...DEF[f].C }; P.drawn = null;
+      invalidate(true);
+    }
+    $$('.frames [data-field]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.field === f)));
+    if (setHash) history.replaceState(null, '', '#' + (f === 'g' ? 'arbeit' : 'elektrisch'));
+    setLead();
+  }
+
+  /* =====================================================================
+     PAGE 2: energy on the marble run
+     ===================================================================== */
+  const G = 9.81, L0 = 0.30, RB = 0.035, SREST = L0 + RB, TOP = 1.0, XMIN = -0.15, XSPAN = 2.9, YBOT = -0.12;
+  const E = {
+    D: 100, x: 0.07, m: 0.02, R: 0.25, mu: 0, tempo: 0.25,
+    showF: true, showZ: true, showT: true,
+    phase: 'ready', s: 0, v: 0, fl: null, flTrail: [], strobe: [], nextStrobe: 0, t: 0, E0: 0, segs: null, paused: false,
+  };
+  let dirtyE = true;
+
+  function buildTrack(R) {
+    const segs = [
+      { t: 'l', x0: 0, y0: 0, dx: 1, dy: 0, len: 1.0 },
+      { t: 'a', cx: 1.0, cy: R, r: R, th0: -Math.PI / 2, len: 2 * Math.PI * R },
+      { t: 'l', x0: 1.0, y0: 0, dx: 1, dy: 0, len: 0.9 },
+      { t: 'a', cx: 1.9, cy: 0.6, r: 0.6, th0: -Math.PI / 2, len: Math.PI / 2 * 0.6 },
+      { t: 'l', x0: 2.5, y0: 0.6, dx: 0, dy: 1, len: Infinity },   // vertical, continues as free flight upwards
+    ];
+    let s = 0;
+    for (const g of segs) { g.s0 = s; s += g.len; }
+    return segs;
+  }
+  function segIndex(s) {
+    const S = E.segs;
+    for (let i = S.length - 1; i >= 0; i--) if (s >= S[i].s0) return i;
+    return 0;
+  }
+  function at(s) {
+    const i = segIndex(s), g = E.segs[i], u = s - g.s0;
+    if (g.t === 'l') return { x: g.x0 + g.dx * u, y: g.y0 + g.dy * u, tx: g.dx, ty: g.dy, k: 0, i };
+    const th = g.th0 + u / g.r;
+    return { x: g.cx + g.r * Math.cos(th), y: g.cy + g.r * Math.sin(th), tx: -Math.sin(th), ty: Math.cos(th), k: 1 / g.r, i };
+  }
+  const compression = s => Math.max(0, SREST - s);
+  // tangential acceleration without friction, and the normal force of the track
+  function forces(s, v) {
+    const p = at(s);
+    const a0 = -G * p.ty + E.D * compression(s) / E.m;
+    const N = E.m * (p.k * v * v + G * p.tx);   // positive: the track pushes on the ball
+    return { a0, N, p };
+  }
+  function accel(s, v) {
+    const f = forces(s, v);
+    return f.a0 - (E.mu > 0 ? E.mu * Math.abs(f.N) / E.m * Math.sign(v) : 0);
+  }
+
+  function resetE() {
+    E.segs = buildTrack(E.R);
+    E.s = SREST - E.x; E.v = 0; E.t = 0; E.fl = null; E.flTrail = []; E.strobe = []; E.nextStrobe = 0;
+    E.phase = 'ready'; E.E0 = 0.5 * E.D * E.x * E.x; E.paused = false;
+    dirtyE = true; updateE(true);
+  }
+  function releaseE() {
+    if (E.phase !== 'ready') { resetE(); return; }
+    E.phase = 'run'; E.paused = false; E.nextStrobe = 0;
+    updateE(true);
+  }
+
+  function ballPos() {
+    if (E.fl) return { x: E.fl.x, y: E.fl.y, cx: E.fl.x, cy: E.fl.y + 0 };
+    const p = at(E.s);
+    return { x: p.x, y: p.y, cx: p.x - p.ty * RB, cy: p.y + p.tx * RB, p };
+  }
+
+  function stepE(dt) {
+    const h = 0.0004, n = Math.ceil(dt / h), hh = dt / n;
+    for (let k = 0; k < n; k++) {
+      if (E.phase === 'run') {
+        const s = E.s, v = E.v;
+        if (v === 0 && E.mu > 0) {
+          const f = forces(s, 0);
+          if (Math.abs(f.a0) <= E.mu * Math.abs(f.N) / E.m) { E.phase = 'rest'; break; }
+        }
+        const k1s = v, k1v = accel(s, v);
+        const k2s = v + hh / 2 * k1v, k2v = accel(s + hh / 2 * k1s, k2s);
+        const k3s = v + hh / 2 * k2v, k3v = accel(s + hh / 2 * k2s, k3s);
+        const k4s = v + hh * k3v, k4v = accel(s + hh * k3s, k4s);
+        let nv = v + hh / 6 * (k1v + 2 * k2v + 2 * k3v + k4v);
+        const ns = s + hh / 6 * (k1s + 2 * k2s + 2 * k3s + k4s);
+        if (E.mu > 0 && v !== 0 && nv * v < 0) nv = 0;
+        E.s = ns; E.v = nv;
+        const f = forces(ns, nv);
+        if (f.N < -1e-6 * E.m * G && f.p.k > 0) {
+          E.phase = 'fly';
+          E.fl = { x: f.p.x - f.p.ty * RB, y: f.p.y + f.p.tx * RB, vx: nv * f.p.tx, vy: nv * f.p.ty, x0: f.p.x, y0: f.p.y };
+          // fly with the ball centre; keep the offset to compute heights of the point mass
+          E.fl.off = { x: -f.p.ty * RB, y: f.p.tx * RB }; E.fl.tf = 0;
+          E.flTrail = [{ x: E.fl.x, y: E.fl.y }];
+        }
+      } else if (E.phase === 'fly') {
+        const F = E.fl;
+        F.vy -= G * hh; F.x += F.vx * hh; F.y += F.vy * hh; F.tf += hh;
+        const ly = E.segs[1], d = Math.hypot(F.x - ly.cx, F.y - ly.cy);
+        if ((F.tf > 0.03 && d > ly.r - RB) || F.y < RB) { E.phase = 'crash'; break; }
+      } else break;
+      E.t += hh;
+      if (E.t >= E.nextStrobe) {
+        const b = ballPos();
+        E.strobe.push({ x: b.cx, y: b.cy });
+        if (E.strobe.length > 60) E.strobe.shift();
+        E.nextStrobe = E.t + 0.05;
+      }
+      if (E.phase === 'fly' && E.flTrail.length < 2000) E.flTrail.push({ x: E.fl.x, y: E.fl.y });
+    }
+    dirtyE = true;
+  }
+
+  function energies() {
+    let Ef = 0, Ek, Ep;
+    if (E.fl) {
+      const y = E.fl.y - E.fl.off.y;
+      Ek = 0.5 * E.m * (E.fl.vx ** 2 + E.fl.vy ** 2); Ep = E.m * G * y;
+    } else {
+      const p = at(E.s), c = compression(E.s);
+      Ef = 0.5 * E.D * c * c; Ek = 0.5 * E.m * E.v * E.v; Ep = E.m * G * p.y;
+    }
+    const Q = E.mu > 0 ? Math.max(0, E.E0 - Ef - Ek - Ep) : 0;
+    return { Ef, Ek, Ep, Q };
+  }
+
+  /* ---- page 2 drawing ---- */
+  const cvE = $('#cvE');
+  function drawEnergy() {
+    const { ctx, w, h } = fit(cvE);
+    const sc = w / XSPAN, X = x => (x - XMIN) * sc, Y = y => h - (y - YBOT) * sc;
+    const ytop = YBOT + h / sc;
+    ctx.clearRect(0, 0, w, h);
+
+    // height grid
+    ctx.lineWidth = 1; ctx.font = `12px ${BODY}`; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    for (let y = 0.25; y < ytop; y += 0.25) {
+      ctx.strokeStyle = Math.abs(y % 0.5) < 1e-9 ? C.grid2 : C.grid;
+      ctx.beginPath(); ctx.moveTo(0, Y(y)); ctx.lineTo(w, Y(y)); ctx.stroke();
+      if (Math.abs(y % 0.5) < 1e-9) { ctx.fillStyle = C.muted; ctx.fillText(fmt(y, 1) + ' m', 6, Y(y) - 2); }
+    }
+    // ground
+    ctx.fillStyle = C.ground; ctx.fillRect(0, Y(0), w, h - Y(0));
+
+    // z_max
+    if (E.showZ) {
+      const z = E.E0 / (E.m * G);
+      if (z < ytop - 0.02) {
+        ctx.setLineDash([6, 5]); ctx.strokeStyle = C.epot; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(X(0.45), Y(z)); ctx.lineTo(w, Y(z)); ctx.stroke(); ctx.setLineDash([]);
+        subText(ctx, X(0.5), Y(z) - 11, [['E', 0], [' = mgz', 0], ['max', 1], [` = ${fmt(z, 2)} m`, 0]], C.epot, 15);
+      } else {
+        subText(ctx, w - 230, 14, [['z', 0], ['max', 1], [` = ${fmt(z, 2)} m, über dem Bild`, 0]], C.epot, 14);
+      }
+    }
+
+    // wall and spring
+    ctx.fillStyle = C.track; ctx.fillRect(X(-0.06), Y(0.16), 0.06 * sc, 0.16 * sc);
+    const bp = ballPos();
+    const xEnd = E.fl ? L0 : Math.min(L0, E.s - RB);
+    ctx.strokeStyle = C.spring; ctx.lineWidth = 2.4; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(X(0), Y(RB));
+    const nz = 12;
+    for (let i = 1; i < nz; i++) ctx.lineTo(X(xEnd * i / nz), Y(RB + (i % 2 ? 0.03 : -0.03)));
+    ctx.lineTo(X(xEnd), Y(RB)); ctx.stroke();
+    ctx.fillStyle = C.spring; ctx.fillRect(X(xEnd) - 3, Y(RB + 0.04), 5, 0.08 * sc);
+    if (E.phase === 'ready') {
+      ctx.setLineDash([3, 4]); ctx.strokeStyle = C.muted; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(L0), Y(0.11)); ctx.lineTo(X(L0), Y(-0.02)); ctx.stroke(); ctx.setLineDash([]);
+      text(ctx, 'x', X((L0 + xEnd) / 2), Y(0.12), C.efeder, `italic 15px ${MATH}`);
+    }
+
+    // track
+    ctx.strokeStyle = C.track; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(X(-0.06), Y(0)); ctx.lineTo(X(1.9), Y(0));
+    ctx.arc(X(1.9), Y(0.6), 0.6 * sc, Math.PI / 2, 0, true);
+    ctx.lineTo(X(2.5), Y(TOP));
+    ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(1.0), Y(E.R), E.R * sc, 0, 2 * Math.PI); ctx.stroke();
+    // track label at top of ramp
+    text(ctx, 'Ende der Bahn', X(2.5) - 8, Y(TOP) - 2, C.muted, `12px ${BODY}`, 'right');
+
+    // stroboscope
+    if (E.showT) {
+      ctx.fillStyle = C.ball;
+      for (let i = 0; i < E.strobe.length; i++) {
+        const q = E.strobe[i];
+        ctx.globalAlpha = 0.08 + 0.32 * i / E.strobe.length;
+        ctx.beginPath(); ctx.arc(X(q.x), Y(q.y), RB * sc * 0.55, 0, 2 * Math.PI); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    // flight path
+    if (E.flTrail.length > 1) {
+      ctx.setLineDash([4, 5]); ctx.strokeStyle = C.ffield; ctx.lineWidth = 2;
+      ctx.beginPath(); E.flTrail.forEach((q, i) => i ? ctx.lineTo(X(q.x), Y(q.y)) : ctx.moveTo(X(q.x), Y(q.y))); ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // ball
+    const cx = X(bp.cx), cy = Y(bp.cy);
+    if (bp.cy - RB > ytop) {
+      arrow(ctx, cx, 34, 0, -24, C.ball, 3);
+      text(ctx, `${fmt(bp.cy, 2)} m`, cx - 10, 22, C.ball, `700 13px ${BODY}`, 'right');
+    } else {
+      ctx.beginPath(); ctx.arc(cx, cy, RB * sc, 0, 2 * Math.PI);
+      ctx.fillStyle = E.phase === 'crash' ? C.ffield : C.ball; ctx.fill();
+      ctx.strokeStyle = C.halo; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+
+    // forces in the loop
+    if (E.showF && !E.fl && (E.phase === 'run' || E.phase === 'ready') && bp.p && bp.p.i === 1) {
+      const L = 0.16 * sc, need = E.v * E.v / (G * E.R);
+      const nx = -bp.p.ty, ny = bp.p.tx;   // toward the loop centre
+      arrow(ctx, cx, cy, 0, L, C.ffield, 3);
+      vlabel(ctx, cx + 16, cy + L + 4, 'F', 'G', C.ffield, 16);
+      const Lz = Math.min(need * L, 0.75 * sc);
+      if (arrow(ctx, cx, cy, nx * Lz, -ny * Lz, C.accent, 3)) vlabel(ctx, cx + nx * (Lz + 16), cy - ny * (Lz + 16) - 4, 'F', 'ZP', C.accent, 16);
+    }
+    if (E.phase === 'crash') text(ctx, 'Kugel von der Bahn gefallen', X(1.0 + E.R + 0.08), Y(E.R), C.ffield, `700 14px ${BODY}`, 'left');
+  }
+
+  /* ---- page 2 text and readouts ---- */
+  let lastEKey = '';
+  function updateE(force) {
+    const en = energies(), E0 = E.E0 || 1;
+    const bar = $('#ebar').children;
+    bar[0].style.width = (en.Ef / E0 * 100) + '%';
+    bar[1].style.width = (en.Ek / E0 * 100) + '%';
+    bar[2].style.width = (en.Ep / E0 * 100) + '%';
+    bar[3].style.width = (en.Q / E0 * 100) + '%';
+    const mJ = v => fmt(v * 1000, 1) + ' mJ';
+    $('#eF').textContent = mJ(en.Ef); $('#eK').textContent = mJ(en.Ek); $('#eP').textContent = mJ(en.Ep); $('#eQ').textContent = mJ(en.Q);
+    $('#eS').textContent = mJ(en.Ef + en.Ek + en.Ep + en.Q);
+    const b = ballPos(), hgt = E.fl ? E.fl.y - E.fl.off.y : b.y;
+    const v = E.fl ? Math.hypot(E.fl.vx, E.fl.vy) : Math.abs(E.v);
+    $('#oH').textContent = fmt(hgt, 2);
+    $('#oV').textContent = fmt(v, 2);
+    explainE(en);
+    if (!force) return;
+
+    $('#sxOut').textContent = `${fmt(E.x * 100, 1)} cm`;
+    $('#sdOut').textContent = `${fmt(E.D)} N/m`;
+    $('#smOut').textContent = `${fmt(E.m * 1000)} g`;
+    $('#srOut').textContent = `${fmt(E.R * 100)} cm`;
+    $('#smuOut').textContent = fmt(E.mu, 2);
+    $('#oE0').textContent = fmt(E.E0 * 1000, 1);
+    $('#oVmax').textContent = fmt(Math.sqrt(2 * E.E0 / E.m), 2);
+    $('#oZmax').textContent = fmt(E.E0 / (E.m * G), 2);
+    const xmin = Math.sqrt(5 * E.m * G * E.R / E.D);
+    $('#oXmin').textContent = fmt(xmin * 100, 1);
+    const ok = E.x >= xmin;
+    $('#loopVerdict').innerHTML = (ok
+      ? `Vorhersage: <b>Die Kugel schafft den Looping</b>, weil <span class="m">x</span> = ${fmt(E.x * 100, 1)} cm ≥ ${fmt(xmin * 100, 1)} cm.`
+      : `Vorhersage: <b>Die Kugel schafft den Looping nicht</b>, weil <span class="m">x</span> = ${fmt(E.x * 100, 1)} cm &lt; ${fmt(xmin * 100, 1)} cm.`)
+      + (E.mu > 0 ? ' Gilt ohne Reibung. Mit Reibung braucht es mehr.' : '');
+    $('#eGo').textContent = E.phase === 'ready' ? 'Kugel loslassen' : 'Zurück zum Start';
+    $('#ePause').disabled = E.phase === 'ready';
+    setPlayIcon($('#ePause'), !E.paused);
+  }
+
+  function explainE(en) {
+    const mJ = v => fmt(v * 1000, 0) + ' mJ';
+    let pill = 'Bereit', st = '', title, txt;
+    const b = ballPos(), seg = b.p ? b.p.i : -1;
+    if (E.phase === 'ready') {
+      title = 'Die ganze Energie steckt in der Feder';
+      txt = `Die Feder ist um <span class="m">x</span> = ${fmt(E.x * 100, 1)} cm gestaucht und speichert <span class="m">½Dx²</span> = ${mJ(E.E0)}. Die Kugel ruht am Boden: keine kinetische und keine potentielle Energie.`;
+    } else if (E.phase === 'crash') {
+      pill = 'Abgestürzt'; st = 'end';
+      title = 'Die Kugel ist aus dem Looping gefallen';
+      txt = 'Oben war <span class="m">v² &lt; gR</span>. Die Gewichtskraft war grösser als die nötige Zentripetalkraft, die Bahn hätte ziehen müssen. Stauche die Feder stärker oder mache den Looping kleiner.';
+    } else if (E.phase === 'fly') {
+      pill = 'Wurf'; st = 'on';
+      title = 'Die Kugel löst sich von der Bahn';
+      txt = 'Die Bahn kann nur drücken. Weil <span class="m">mv²/R &lt; mg</span>, fliegt die Kugel auf einer Wurfparabel weiter. Die Energie bleibt dabei erhalten: <span class="m">E<sub>kin</sub> + E<sub>pot</sub></span> = const.';
+    } else if (E.phase === 'rest') {
+      pill = 'Ruht'; st = 'end';
+      title = 'Die Kugel ist zur Ruhe gekommen';
+      txt = `Die Reibung hat ${mJ(en.Q)} in Wärme umgewandelt. Die Summe aller Energien ist immer noch ${mJ(E.E0)}.`;
+    } else {
+      pill = 'Unterwegs'; st = 'on';
+      const up = E.v > 0;
+      if (compression(E.s) > 0) {
+        title = up ? 'Die Feder entspannt sich' : 'Die Kugel drückt die Feder zusammen';
+        txt = up ? 'Die Federkraft beschleunigt die Kugel: Federenergie wird zu kinetischer Energie.' : 'Kinetische Energie wird wieder in der Feder gespeichert. Ohne Reibung kommt die Kugel genau zum Startpunkt zurück.';
+      } else if (seg === 1) {
+        title = 'Im Looping';
+        txt = 'Mit der Höhe wächst die potentielle Energie, die Kugel wird langsamer. Ganz oben muss noch gelten <span class="m">mg ≤ mv²/R</span>, sonst löst sie sich von der Bahn.';
+      } else if (b.y < 1e-6) {
+        title = 'Auf der Ebene: nur kinetische Energie';
+        txt = E.mu > 0
+          ? 'Hier ist <span class="m">h</span> = 0. Die Energie ist kinetisch, bis auf das, was die Reibung schon in Wärme umgewandelt hat.'
+          : `Hier ist <span class="m">h</span> = 0, die ganze Energie ist kinetisch: <span class="m">v = v<sub>max</sub></span> = ${fmt(Math.sqrt(2 * E.E0 / E.m), 2)} m/s.`;
+      } else if (b.y > TOP) {
+        title = up ? 'Senkrechter Wurf über das Bahnende' : 'Die Kugel fällt zurück';
+        txt = up ? 'Die Kugel fliegt senkrecht weiter, bis die ganze kinetische Energie zu potentieller Energie geworden ist: bei <span class="m">mgz<sub>max</sub> = E<sub>ges</sub></span>.' : 'Potentielle Energie wird wieder zu kinetischer Energie. Ohne Reibung pendelt die Kugel immer weiter hin und her.';
+      } else {
+        title = up ? 'Die Kugel steigt' : 'Die Kugel rollt zurück';
+        txt = up ? 'Kinetische Energie wird zu potentieller Energie. Die Form der Rampe spielt dafür keine Rolle, nur die Höhe.' : 'Potentielle Energie wird wieder zu kinetischer Energie.';
+      }
+    }
+    const key = pill + title + txt;
+    if (key === lastEKey) return;
+    lastEKey = key;
+    const pe = $('#ePill'); pe.textContent = pill; pe.dataset.state = st;
+    $('#eTitle').textContent = title; $('#eText').innerHTML = txt;
+  }
+
+  /* ---- page 2 input ---- */
+  const bindE = (id, key, f) => $(id).addEventListener('input', e => { E[key] = f(+e.target.value); resetE(); });
+  bindE('#sx', 'x', v => v / 100);
+  bindE('#sd', 'D', v => v);
+  bindE('#sm', 'm', v => v / 1000);
+  bindE('#sr', 'R', v => v / 100);
+  bindE('#smu', 'mu', v => v);
+  $$('input[name="tempo"]').forEach(r => r.addEventListener('change', () => { E.tempo = +r.value; }));
+  $('#showF').addEventListener('change', e => { E.showF = e.target.checked; dirtyE = true; });
+  $('#showZ').addEventListener('change', e => { E.showZ = e.target.checked; dirtyE = true; });
+  $('#showT').addEventListener('change', e => { E.showT = e.target.checked; dirtyE = true; });
+  $('#eGo').addEventListener('click', releaseE);
+  $('#ePause').addEventListener('click', () => { E.paused = !E.paused; updateE(true); });
+
+  /* =====================================================================
+     pages, header, QR
+     ===================================================================== */
+  let page = 'arbeit';
+  const LEADS = {
+    g: 'Ein Kran hebt einen Betonblock von A nach C. Hängt die Arbeit davon ab, welchen Weg der Block nimmt?',
+    e: 'Eine positive Ladung q wird im Feld einer festen Ladung Q von A nach C gebracht. Die Kraft ist hier nicht konstant. Hängt die Arbeit trotzdem nur von A und C ab?',
+    energie: 'Eine gespannte Feder schiesst eine Murmel durch einen Looping und eine steile Rampe hinauf. Die Energie wechselt ständig die Form, die Summe bleibt gleich.',
+  };
+  function setLead() {
+    $('#title').textContent = page === 'arbeit' ? 'Arbeit im Kraftfeld' : 'Energieerhaltung auf der Murmelbahn';
+    $('#lead').textContent = page === 'arbeit' ? LEADS[P.field] : LEADS.energie;
+  }
+  function showPage(p) {
+    page = p;
+    $('#page-arbeit').hidden = p !== 'arbeit';
+    $('#page-energie').hidden = p !== 'energie';
+    $$('.pages a').forEach(a => { if (a.dataset.page === p) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    setLead();
+    dirtyW = dirtyE = true;
+  }
+  function route() {
+    const h = location.hash.slice(1);
+    if (h === 'energie') showPage('energie');
+    else { showPage('arbeit'); setField(h === 'elektrisch' ? 'e' : 'g', false); }
+  }
+  window.addEventListener('hashchange', route);
+  $$('.pages a').forEach(a => a.addEventListener('click', ev => {
+    ev.preventDefault();
+    const target = a.dataset.page === 'arbeit' ? (P.field === 'e' ? 'elektrisch' : 'arbeit') : 'energie';
+    if (location.hash.slice(1) !== target) location.hash = target; else route();
+  }));
+
+  const qr = $('#qr'), qrUrl = $('#qrUrl');
+  let qrOpener = null;
+  function defaultUrl() {
+    let framed = true;
+    try { framed = window.top !== window.self; } catch (e) { /* cross-origin frame */ }
+    if (!framed && /^https?:$/.test(location.protocol)) return location.href.split('#')[0];
+    try { const v = localStorage.getItem('arbeit-energie-qr-url'); if (v) return v; } catch (e) { /* storage blocked */ }
+    return SHARE_URL;
+  }
+  function renderQR() {
+    const box = $('#qrCode'), url = qrUrl.value.trim();
+    box.textContent = '';
+    $('#qrUrlText').textContent = url;
+    const msg = t => { const p = document.createElement('p'); p.textContent = t; box.append(p); };
+    if (!url) { msg('Gib unten die Adresse ein, unter der diese Seite erreichbar ist.'); return; }
+    if (typeof qrcode !== 'function') { msg('Der QR-Generator konnte nicht geladen werden. Prüfe die Internetverbindung und öffne das Fenster erneut.'); return; }
+    let q;
+    try { q = qrcode(0, 'M'); q.addData(url); q.make(); } catch (e) { msg('Diese Adresse ist zu lang für einen QR-Code.'); return; }
+    const n = q.getModuleCount(), quiet = 3, cells = n + 2 * quiet, px = Math.max(4, Math.floor(720 / cells));
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = cells * px;
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', 'QR-Code für ' + url);
+    const g = cv.getContext('2d'), cs = getComputedStyle(document.documentElement);
+    g.fillStyle = cs.getPropertyValue('--qr-bg').trim(); g.fillRect(0, 0, cv.width, cv.height);
+    g.fillStyle = cs.getPropertyValue('--qr-ink').trim();
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) g.fillRect((c + quiet) * px, (r + quiet) * px, px, px);
+    box.append(cv);
+  }
+  function openQR() {
+    qrOpener = document.activeElement;
+    if (!qrUrl.value) qrUrl.value = defaultUrl();
+    qr.hidden = false; renderQR();
+    if (typeof qrcode !== 'function') setTimeout(renderQR, 1200);
+    $('#qrClose').focus();
+  }
+  function closeQR() { qr.hidden = true; if (qrOpener) qrOpener.focus(); }
+  $('#qrBtn').addEventListener('click', openQR);
+  $('#qrClose').addEventListener('click', closeQR);
+  qr.addEventListener('click', e => { if (e.target === qr) closeQR(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !qr.hidden) closeQR(); });
+  qrUrl.addEventListener('input', () => {
+    renderQR();
+    try { localStorage.setItem('arbeit-energie-qr-url', qrUrl.value.trim()); } catch (e) { /* storage blocked */ }
+  });
+
+  /* ---------- start ---------- */
+  readColors();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+  new MutationObserver(readColors).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { dirtyW = dirtyE = true; });
+  new ResizeObserver(() => { dirtyW = dirtyE = true; }).observe(document.body);
+
+  buildPath(); updateW(true);
+  resetE();
+  if (reduced) E.paused = false;
+  route();
+
+  let last = performance.now(), lastUI = 0;
+  function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if (page === 'arbeit') {
+      if (P.running && !P.paused && P.path) {
+        P.prog += SPEED * dt;
+        if (P.prog >= P.path.L) finishRun();
+        dirtyW = true;
+      }
+      if (dirtyW) { drawWork(); drawGraph(); dirtyW = false; }
+      if (now - lastUI > 100) { updateW(false); lastUI = now; }
+    } else {
+      if ((E.phase === 'run' || E.phase === 'fly') && !E.paused) {
+        const prev = E.phase;
+        stepE(dt * E.tempo);
+        if (E.phase !== prev) updateE(true);
+      }
+      if (dirtyE) { drawEnergy(); dirtyE = false; }
+      if (now - lastUI > 80) { updateE(false); lastUI = now; }
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
